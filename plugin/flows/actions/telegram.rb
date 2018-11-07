@@ -3,14 +3,19 @@ module Fastlane
     class TelegramAction < Action
         
       def self.run(params)
+        UI.message("Posting message to a telegram channel")
+        
         token = params[:token]
         chat_id = params[:chat_id]
         text = params[:text]
         
-        UI.message("Posting message to a telegram channel")
+        options = {:chat_id => chat_id, :text => text}
+        if params[:parse_mode]
+            options[:parse_mode] = params[:parse_mode]
+        end
 
         uri = URI.parse("https://api.telegram.org/bot#{token}/sendMessage")
-        response = Net::HTTP.post_form(uri, {:chat_id => chat_id, :text => text})
+        response = Net::HTTP.post_form(uri, options)
       end
 
       def self.description
@@ -46,7 +51,11 @@ module Fastlane
                                    env_name: "TELEGRAM_TEXT",
                                 description: "Text of the message to be sent",
                                    optional: false,
-                                       type: String)
+                                       type: String),
+           FastlaneCore::ConfigItem.new(key: :parse_mode,
+                                   env_name: "TELEGRAM_PARSE_MODE",
+                                description: "Send Markdown or HTML, if you want Telegram apps to show bold, italic, fixed-width text or inline URLs in your bot's message",
+                                   optional: true)
         ]
       end
 
